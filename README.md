@@ -1,1 +1,1 @@
-# ProofEasy_SDK Demo Web App
+# ProofEasy SDK Demo Web App
