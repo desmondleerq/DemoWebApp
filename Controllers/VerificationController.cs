@@ -108,4 +108,31 @@ public class VerificationController : ControllerBase
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }
+
+    [HttpPost("recheck")]
+    public async Task<IActionResult> RecheckStatus([FromBody] RecheckRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(request.uniqueId))
+            {
+                return BadRequest("uniqueId is required.");
+            }
+
+            var sdk = new ProofEasyPROC(apiKey, secretKey);
+            var blockchainStatus = await sdk.GetBlockchainStatusAsync(request.uniqueId);
+
+            return Ok(blockchainStatus);
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"An error occurred: {ex.Message}");
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
+
+    public class RecheckRequest
+    {
+        public required string uniqueId { get; set; }
+    }
 }

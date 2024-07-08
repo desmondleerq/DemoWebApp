@@ -7,15 +7,20 @@
     <title>Document Verification</title>
 </head>
 
-<body>
+<div>
     <h1>Upload PDF for Verification</h1>
     <form id="uploadForm" enctype="multipart/form-data">
         <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf" required>
         <button type="submit">Upload and Verify</button>
     </form>
+    <div/>
+    <button id="recheckButton">Re-Check Status</button>
+    <div />
     <div id="result"></div>
 
     <script>
+        let uniqueId = '';
+
         document.getElementById('uploadForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
@@ -25,13 +30,39 @@
             formData.append('pdfFile', fileField.files[0]);
 
             const response = await fetch('/api/verification/verify', {
-                method: 'POST',
+                method: 'POST', 
                 body: formData
             });
 
             const result = await response.json();
             document.getElementById('result').innerText = JSON.stringify(result, null, 2);
+
+            // Save uniqueid for re-check
+             if (result && result.documentSubmit && result.documentSubmit.uniqueId) {
+                uniqueId = result.documentSubmit.uniqueId;
+                document.getElementById('recheckButton').style.display = 'block';
+            } else {
+                alert('Unique ID not found in the response.');
+            }
         });
+
+        document.getElementById('recheckButton').addEventListener('click', async function () {
+                if (!uniqueId) {
+                    alert('No uniqueId available for re-check.');
+                    return;
+                }
+
+                const response = await fetch('/api/verification/recheck', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ uniqueId })
+                });
+
+                const result = await response.json();
+                document.getElementById('result').innerText = JSON.stringify(result, null, 2);
+            });
     </script>
 </body>
 
